@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { motion,type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 
 /**
  * EasySolarKitPage (Redesign + Responsive + Framer Motion)
@@ -98,7 +98,6 @@ const EasySolarKitPage: React.FC = () => {
             <div className="absolute inset-0 bg-black/55" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-black/85" />
           </motion.div>
-
           {/* Content */}
           <div className="relative z-10 w-full pb-10 sm:pb-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
@@ -180,10 +179,7 @@ const EasySolarKitPage: React.FC = () => {
                 </motion.div>
               </motion.div>
             </div>
-          </div>
-
-          {/* Bottom fade to white */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent" />
+          </div>{" "}
         </div>
       </section>
 

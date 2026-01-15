@@ -1,9 +1,7 @@
 import React from "react";
-import { motion,type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { translations } from "../translations";
 import type { Language } from "../App";
-
-
 
 interface HeroProps {
   lang: Language;
@@ -34,8 +32,8 @@ const Hero: React.FC<HeroProps> = ({ lang }) => {
 
   return (
     <section className="relative mt-[-30px] overflow-hidden">
-      {/* Height: full screen on mobile, shorter on desktop */}
-      <div className="relative h-[92vh] min-h-[620px] sm:h-[560px] lg:h-[680px] flex items-end sm:items-center">
+      {/* Mobile-friendly height */}
+      <div className="relative h-[110vh] min-h-[520px] sm:h-[560px] lg:h-[680px] flex items-end sm:items-center">
         {/* Background */}
         <motion.div
           variants={fadeIn}
@@ -46,15 +44,14 @@ const Hero: React.FC<HeroProps> = ({ lang }) => {
           <img
             src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=1920"
             alt="Modern House with Solar Panels"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
           />
-          {/* overlays */}
           <div className="absolute inset-0 bg-black/45" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60" />
         </motion.div>
 
-        {/* Subtle decorative blobs */}
+        {/* Decorative blobs */}
         <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-red-600/15 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-28 -left-28 w-80 h-80 rounded-full bg-white/10 blur-3xl" />
 
@@ -131,50 +128,81 @@ const Hero: React.FC<HeroProps> = ({ lang }) => {
                 </motion.button>
               </motion.div>
 
-              {/* Product cards */}
+              {/* ✅ Product cards (FIXED: no cut + smooth swipe) */}
               <motion.div variants={fadeUp} className="mt-10 sm:mt-12">
-                {/* On phone: horizontal scroll; on desktop: row */}
-                <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-2 pr-2 -mx-1 px-1 sm:overflow-visible">
+                <div
+                  className="
+                    flex gap-4 sm:gap-6
+                    overflow-x-auto
+                    pb-4
+                    px-4 sm:px-0
+                    -mx-4 sm:mx-0
+                    scroll-px-4
+                    snap-x snap-mandatory
+                    [scrollbar-width:none]
+                  "
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
+                  {/* hide scrollbar (webkit) */}
+                  <style>{`
+                    div::-webkit-scrollbar { display: none; }
+                  `}</style>
+
                   {[1, 2, 3].map((idx) => (
                     <motion.div
                       key={idx}
-                      whileHover={{ y: -8 }}
+                      whileHover={{ y: -6 }}
                       transition={{ duration: 0.25, ease }}
-                      className="min-w-[140px] sm:min-w-[0] w-[140px] h-[140px] sm:w-32 sm:h-32 md:w-40 md:h-40 bg-white/10 backdrop-blur-sm rounded-3xl border border-white/15 p-3 flex items-center justify-center shadow-xl"
-                      style={{ flex: "0 0 auto" }}
+                      className="
+                        snap-start
+                        shrink-0
+                        w-[170px] h-[170px]
+                        sm:w-32 sm:h-32
+                        md:w-40 md:h-40
+                        rounded-3xl
+                        bg-white/10 backdrop-blur-sm
+                        border border-white/15
+                        shadow-xl
+                        overflow-hidden
+                      "
                     >
-                      <motion.img
-                        src={`https://picsum.photos/seed/${idx + 100}/260/260`}
-                        alt={`Product ${idx}`}
-                        className="max-w-full max-h-full object-contain drop-shadow-2xl"
-                        animate={{ y: [0, -6, 0] }}
-                        transition={{
-                          duration: 3.2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: idx * 0.2,
-                        }}
-                      />
+                      {/* inner padding area so image never touches edges */}
+                      <div className="w-full h-full p-4 flex items-center justify-center">
+                        <motion.img
+                          src={`https://picsum.photos/seed/${
+                            idx + 100
+                          }/420/420`}
+                          alt={`Product ${idx}`}
+                          className="w-full h-full object-contain"
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{
+                            duration: 3.2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: idx * 0.2,
+                          }}
+                        />
+                      </div>
                     </motion.div>
                   ))}
+
+                  {/* extra right padding so last card is not cut */}
+                  <div className="w-4 shrink-0 sm:hidden" />
                 </div>
 
-                <div className="mt-4 text-[11px] font-semibold text-white/75 tracking-wider">
+                <div className="mt-3 text-[11px] font-semibold text-white/75 tracking-wider sm:hidden">
                   Swipe on mobile to explore featured products →
                 </div>
               </motion.div>
             </motion.div>
           </div>
         </div>
-
       </div>
     </section>
   );
 };
 
 export default Hero;
-
-/* -------------------- Icons (SVG) -------------------- */
 
 function IconArrowRight({ className }: { className?: string }) {
   return (

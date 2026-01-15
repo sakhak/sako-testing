@@ -92,7 +92,7 @@ const AboutPage: React.FC = () => {
   return (
     <div className="bg-white overflow-x-hidden mt-[-30px]">
       {/* Hero / History Section */}
-      <section className="relative min-h-[520px] h-[92vh] sm:h-[100vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[520px] h-[110vh] sm:h-[100vh] flex items-center overflow-hidden">
         <motion.div
           variants={fade}
           initial="hidden"

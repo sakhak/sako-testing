@@ -81,7 +81,7 @@ const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.55, ease }}
-          className="fixed left-0 right-0 bottom-3 z-50 px-3"
+          className="fixed left-0 right-9 bottom-3 z-50 px-0"
         >
           <div className="mx-auto max-w-md">
             <div className="relative bg-gray-900/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden">

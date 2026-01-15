@@ -663,13 +663,16 @@ const Navbar: React.FC<NavbarProps> = ({
               </div>
 
               {/* Mobile Footer */}
-              <div className="pt-10 border-t border-gray-100 space-y-8">
-                <div className="flex flex-col space-y-4">
+              <div className="pt-10 border-t border-gray-100 space-y-8 text-center sm:text-left">
+                {/* Contact info */}
+                <div className="flex flex-col space-y-4 items-center sm:items-start">
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                     Regional Contact
                   </h4>
+
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
+                    {/* Phone */}
+                    <div className="flex items-center justify-center sm:justify-start space-x-4">
                       <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
                         <i className="fa-solid fa-phone text-red-600 text-xs" />
                       </div>
@@ -677,7 +680,9 @@ const Navbar: React.FC<NavbarProps> = ({
                         +86 755 1234 5678
                       </span>
                     </div>
-                    <div className="flex items-center space-x-4">
+
+                    {/* Email */}
+                    <div className="flex items-center justify-center sm:justify-start space-x-4">
                       <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
                         <i className="fa-solid fa-envelope text-red-600 text-xs" />
                       </div>
@@ -688,19 +693,22 @@ const Navbar: React.FC<NavbarProps> = ({
                   </div>
                 </div>
 
-                <div className="flex space-x-4 sm:space-x-6 pt-2">
+                {/* Social icons */}
+                <div className="flex justify-center sm:justify-start space-x-4 sm:space-x-6 pt-2">
                   <a
                     href="#"
                     className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-red-600 hover:text-white transition-all active:scale-[0.98]"
                   >
                     <i className="fa-brands fa-facebook-f" />
                   </a>
+
                   <a
                     href="#"
                     className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-red-600 hover:text-white transition-all active:scale-[0.98]"
                   >
                     <i className="fa-brands fa-linkedin-in" />
                   </a>
+
                   <a
                     href="#"
                     className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-red-600 hover:text-white transition-all active:scale-[0.98]"
