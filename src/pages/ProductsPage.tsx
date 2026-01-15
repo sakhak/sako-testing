@@ -2,13 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 
 /**
- * ProductsPage (Redesign + Responsive + Framer Motion)
- * Notes:
- * - Overview mode (Products) + Listing mode (category/subcategory)
- * - Sticky sidebar on desktop
- * - Animated accordion categories
- * - Search + sort + real pagination (client-side)
- * - No FontAwesome (SVG icons included)
+ * ✅ ALL-IN-ONE PAGE
+ * - Products overview + listing (same as your style)
+ * - Click "Details" -> opens split modal like your screenshot (image left, info right)
+ * - CTA button -> opens inquiry form (inside same modal)
+ * - Submit inquiry -> alert(form data)
  */
 
 interface CategoryData {
@@ -26,6 +24,16 @@ interface Product {
 interface ProductsPageProps {
   initialCategory?: string;
 }
+
+type InquiryForm = {
+  productId: number;
+  productName: string;
+  category: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  message: string;
+};
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
@@ -54,7 +62,7 @@ const panel: Variants = {
 
 const rotate: Variants = {
   collapsed: { rotate: 0 },
-  open: { rotate: 45, transition: { duration: 0.18, ease } }, // plus -> x
+  open: { rotate: 45, transition: { duration: 0.18, ease } },
 };
 
 const ProductsPage: React.FC<ProductsPageProps> = ({
@@ -121,6 +129,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
       sub: ["Offline UPS", "Line-interactive UPS", "Online UPS"],
     },
   ]);
+
   const salesPeople = [
     {
       name: "Succie Chen",
@@ -139,10 +148,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
     },
   ];
   const [activeSales, setActiveSales] = useState(0);
-
   const activePerson = salesPeople[activeSales];
-
-  
 
   // Listing controls
   const [search, setSearch] = useState("");
@@ -151,6 +157,23 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
   );
   const [page, setPage] = useState(1);
   const pageSize = 12;
+
+  // ✅ Modal state
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailStep, setDetailStep] = useState<"details" | "inquire">(
+    "details"
+  );
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const [inquiryForm, setInquiryForm] = useState<InquiryForm>({
+    productId: 0,
+    productName: "",
+    category: "",
+    fullName: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
 
   useEffect(() => {
     setActiveCategory(initialCategory);
@@ -179,6 +202,19 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
     );
   };
 
+  const setCategoryAndReset = (name: string) => {
+    setActiveCategory(name);
+    setSearch("");
+    setSort("latest");
+    setPage(1);
+    setCategories((prev) =>
+      prev.map((cat) => ({
+        ...cat,
+        isOpen: cat.name === name || cat.sub.includes(name) ? true : cat.isOpen,
+      }))
+    );
+  };
+
   // helper: stable mock products
   const getMockProducts = (catName: string, count: number = 12): Product[] => {
     const prefix = catName.toLowerCase().includes("battery")
@@ -196,17 +232,11 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
       name: `SAKO ${catName} ${prefix}-${1000 + i}`,
       img: `https://picsum.photos/seed/${encodeURIComponent(
         catName
-      )}-${i}/600/600`,
+      )}-${i}/900/900`,
     }));
   };
 
-  /**
-   * ✅✅✅ FIX FOR YOUR ERROR ✅✅✅
-   * Hooks (useMemo) must run on EVERY render.
-   * Previously, when isOverview === true, the component returned early and skipped these hooks.
-   * Now we compute them BEFORE the overview return, and return safe values when overview.
-   */
-
+  // Derived (hooks must always run)
   const parentCategory = useMemo(() => {
     if (isOverview) return "Products";
     return (
@@ -241,25 +271,45 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
   const startIdx = (safePage - 1) * pageSize;
   const paged = sorted.slice(startIdx, startIdx + pageSize);
 
-  const setCategoryAndReset = (name: string) => {
-    setActiveCategory(name);
-    setSearch("");
-    setSort("latest");
-    setPage(1);
-    // open parent in sidebar
-    setCategories((prev) =>
-      prev.map((cat) => ({
-        ...cat,
-        isOpen: cat.name === name || cat.sub.includes(name) ? true : cat.isOpen,
-      }))
-    );
+  // ✅ Open split modal like screenshot
+  const openDetails = (p: Product) => {
+    setSelectedProduct(p);
+    setDetailStep("details");
+    setInquiryForm({
+      productId: p.id,
+      productName: p.name,
+      category: activeCategory,
+      fullName: "",
+      phone: "",
+      email: "",
+      message: "",
+    });
+    setDetailOpen(true);
   };
 
-  // ---- OVERVIEW MODE ----
+  const closeDetails = () => {
+    setDetailOpen(false);
+    setDetailStep("details");
+  };
+
+  const changeInquiry = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setInquiryForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const submitInquiry = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert(JSON.stringify(inquiryForm, null, 2));
+    setDetailOpen(false);
+    setDetailStep("details");
+  };
+
+  // ---------- Overview ----------
   if (isOverview) {
     return (
       <div className="bg-white">
-        {/* Hero */}
         <section className="relative mt-[-30px] overflow-hidden">
           <div className="relative h-[58vh] min-h-[460px] sm:h-[52vh] sm:min-h-[520px] lg:h-[48vh] lg:min-h-[560px] flex items-end sm:items-center">
             <motion.div
@@ -271,7 +321,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
               <img
                 src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=1920"
                 className="w-full h-full object-cover"
-                alt="SAKO Products"
+                alt="Products"
               />
               <div className="absolute inset-0 bg-black/60" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-black/85" />
@@ -306,10 +356,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                     variants={fadeUp}
                     className="mt-4 text-sm sm:text-lg text-gray-200 leading-relaxed font-medium"
                   >
-                    SAKO is a professional manufacturer of off-grid solar power
-                    systems. We provide clean energy solutions for residential,
-                    commercial, and industrial applications with
-                    industry-leading storage and conversion technology.
+                    Clean energy solutions for residential, commercial, and
+                    industrial applications with leading storage and conversion
+                    technology.
                   </motion.p>
 
                   <motion.div
@@ -320,10 +369,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       transition={{ duration: 0.2, ease }}
-                      onClick={() => {
-                        const first = categories[0]?.name ?? "Products";
-                        setActiveCategory(first);
-                      }}
+                      onClick={() =>
+                        setActiveCategory(categories[0]?.name ?? "Products")
+                      }
                       className="inline-flex justify-center items-center px-9 py-4 rounded-2xl bg-red-600 hover:bg-white hover:text-red-600 text-white font-black uppercase text-[11px] tracking-[0.22em] transition-colors shadow-2xl shadow-red-600/20"
                     >
                       Browse Categories
@@ -345,10 +393,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
           </div>
         </section>
 
-        {/* Overview sections */}
         <div
           id="grid"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 space-y-14 sm:space-y-16 lg:space-y-20"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 space-y-14"
         >
           {categories.map((cat) => (
             <motion.section
@@ -361,7 +408,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
             >
               <motion.div
                 variants={fadeUp}
-                className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-8 sm:mb-10 border-b border-gray-100 pb-5"
+                className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-8 border-b border-gray-100 pb-5"
               >
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100">
@@ -396,7 +443,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                 </motion.button>
               </motion.div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 sm:gap-6 lg:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
                 {getMockProducts(cat.name, 4).map((item) => (
                   <motion.div
                     key={`${cat.name}-${item.id}`}
@@ -407,7 +454,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                     className="group cursor-pointer"
                     onClick={() => setActiveCategory(cat.name)}
                   >
-                    <div className="aspect-square rounded-3xl bg-gray-50 border border-gray-100 flex items-center justify-center p-8 sm:p-10 mb-4 overflow-hidden">
+                    <div className="aspect-square rounded-3xl bg-gray-50 border border-gray-100 flex items-center justify-center  mb-4 overflow-hidden">
                       <motion.img
                         src={item.img}
                         alt={item.name}
@@ -416,14 +463,13 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                         transition={{ duration: 0.25, ease }}
                       />
                     </div>
-                    <h3 className="text-center text-[11px] sm:text-[12px] font-extrabold text-gray-800 uppercase tracking-wide group-hover:text-red-600 transition-colors px-3 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                    <h3 className="text-center text-[11px] font-extrabold text-gray-800 uppercase tracking-wide group-hover:text-red-600 transition-colors px-3 leading-relaxed line-clamp-2 min-h-[2.5rem]">
                       {item.name}
                     </h3>
                   </motion.div>
                 ))}
               </div>
 
-              {/* quick chips */}
               <motion.div
                 variants={fadeUp}
                 className="mt-8 flex flex-wrap gap-2"
@@ -446,10 +492,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
     );
   }
 
-  // ---- LISTING MODE ----
+  // ---------- Listing ----------
   return (
     <div className="bg-white min-h-screen">
-      {/* Breadcrumb */}
       <div className="bg-gray-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
@@ -544,7 +589,6 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                             className="overflow-hidden"
                           >
                             <div className="bg-gray-50/40 pb-3">
-                              {/* parent click */}
                               <button
                                 onClick={() => setCategoryAndReset(cat.name)}
                                 className={[
@@ -608,7 +652,6 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
               className="rounded-3xl border border-gray-100 bg-white shadow-sm overflow-hidden"
             >
               <div className="h-1 bg-red-600" />
-
               <div className="p-6 sm:p-7 text-center">
                 <div className="relative w-20 h-20 mx-auto mb-5">
                   <motion.img
@@ -643,7 +686,6 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                   {activePerson.role}
                 </motion.p>
 
-                {/* Switchers (hover or click) */}
                 <div className="flex justify-center gap-2 mb-5">
                   {salesPeople.map((_, i) => (
                     <button
@@ -684,9 +726,8 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
             </motion.div>
           </aside>
 
-          {/* Listing Grid */}
+          {/* Listing */}
           <main className="lg:w-3/4">
-            {/* Header + controls */}
             <motion.div
               variants={container}
               initial="hidden"
@@ -760,24 +801,21 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                   results
                 </span>
 
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearch("");
-                      setSort("latest");
-                      setPage(1);
-                    }}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-red-200 hover:text-red-600 transition-colors text-[11px] font-extrabold uppercase tracking-widest"
-                  >
-                    <IconX className="w-4 h-4" />
-                    Reset
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setSort("latest");
+                    setPage(1);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-red-200 hover:text-red-600 transition-colors text-[11px] font-extrabold uppercase tracking-widest"
+                >
+                  <IconX className="w-4 h-4" />
+                  Reset
+                </button>
               </motion.div>
             </motion.div>
 
-            {/* Grid */}
             <motion.div
               variants={container}
               initial="hidden"
@@ -792,9 +830,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                     whileHover={{ y: -8 }}
                     whileTap={{ scale: 0.99 }}
                     transition={{ duration: 0.25, ease }}
-                    className="group cursor-pointer rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-2xl hover:shadow-black/10 overflow-hidden"
+                    className="group rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-2xl hover:shadow-black/10 overflow-hidden"
                   >
-                    <div className="aspect-square bg-gray-50 border-b border-gray-100 flex items-center justify-center p-7">
+                    <div className="aspect-square bg-gray-50 border-b border-gray-100 flex items-center justify-center">
                       <motion.img
                         src={product.img}
                         alt={product.name}
@@ -815,7 +853,11 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                           New
                         </span>
 
-                        <button className="inline-flex items-center gap-2 text-gray-700 hover:text-red-600 transition-colors text-[11px] font-black uppercase tracking-[0.22em]">
+                        <button
+                          type="button"
+                          onClick={() => openDetails(product)}
+                          className="inline-flex items-center gap-2 text-gray-700 hover:text-red-600 transition-colors text-[11px] font-black uppercase tracking-[0.22em]"
+                        >
                           Details
                           <IconArrowRight className="w-4 h-4" />
                         </button>
@@ -839,7 +881,6 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
                 </motion.div>
               )}
 
-              {/* Pagination */}
               <motion.div
                 variants={fadeUp}
                 className="mt-10 sm:mt-14 pt-8 border-t border-gray-100 flex items-center justify-center gap-2"
@@ -896,13 +937,348 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
           </main>
         </div>
       </div>
+
+      {/* ✅ Split Modal like screenshot */}
+      <SplitDetailsModal
+        open={detailOpen}
+        step={detailStep}
+        onClose={closeDetails}
+        onGoInquire={() => setDetailStep("inquire")}
+        onBackDetails={() => setDetailStep("details")}
+        product={selectedProduct}
+        data={{
+          status: "COMPLETED",
+          tag: "RESIDENTIAL",
+          title: selectedProduct?.name ?? "—",
+          location: "Beverly Hills, CA",
+          specs: "2,400 sq ft • 4 Bed, 3 Bath",
+          description:
+            "This project showcases our commitment to excellence. Designed with precision and built with high-quality materials, it stands as a testament to modern engineering and architectural beauty.",
+          buttonText: "Inquire About This Project",
+        }}
+        form={inquiryForm}
+        onChangeForm={changeInquiry}
+        onSubmitForm={submitInquiry}
+      />
     </div>
   );
 };
 
 export default ProductsPage;
 
-/* ---------- Icons (SVG, no deps) ---------- */
+/* -------------------- Split Modal -------------------- */
+
+function SplitDetailsModal({
+  open,
+  step,
+  onClose,
+  onGoInquire,
+  onBackDetails,
+  product,
+  data,
+  form,
+  onChangeForm,
+  onSubmitForm,
+}: {
+  open: boolean;
+  step: "details" | "inquire";
+  onClose: () => void;
+  onGoInquire: () => void;
+  onBackDetails: () => void;
+  product: Product | null;
+  data: {
+    status: string;
+    tag: string;
+    title: string;
+    location: string;
+    specs: string;
+    description: string;
+    buttonText: string;
+  };
+  form: InquiryForm;
+  onChangeForm: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  onSubmitForm: (e: React.FormEvent) => void;
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Backdrop */}
+          <motion.button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="absolute inset-0 bg-black/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+
+          {/* Card */}
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            className="relative w-full max-w-6xl overflow-hidden rounded-[28px] bg-white shadow-2xl"
+            initial={{ opacity: 0, y: 18, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 18, scale: 0.985 }}
+            transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+          >
+            {/* Close */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute right-4 top-4 z-20 grid h-11 w-11 place-items-center rounded-full bg-gray-200/80 text-gray-700 hover:bg-gray-200 transition"
+              aria-label="Close"
+            >
+              <IconX className="h-5 w-5" />
+            </button>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              {/* LEFT Image */}
+              <div className="relative min-h-[260px] lg:min-h-[560px] bg-gray-100">
+                <img
+                  src={
+                    product?.img ??
+                    "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=1600"
+                  }
+                  alt={data.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/0 to-black/0" />
+
+                {/* Status badge */}
+                <div className="absolute left-4 top-4 z-10">
+                  <span className="inline-flex items-center rounded-full px-4 py-2 text-[12px] font-black tracking-widest text-white shadow-lg bg-emerald-500">
+                    {data.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* RIGHT panel */}
+              <div className="bg-white">
+                <div className="px-6 sm:px-10 py-8 sm:py-10">
+                  <AnimatePresence mode="wait">
+                    {step === "details" ? (
+                      <motion.div
+                        key="details"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+                      >
+                        <div className="text-[12px] font-black tracking-[0.26em] text-orange-500 uppercase">
+                          {data.tag}
+                        </div>
+
+                        <h2 className="mt-3 text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
+                          {data.title}
+                        </h2>
+
+                        <div className="mt-3 flex items-center gap-2 text-gray-500 font-semibold">
+                          <IconPin className="h-5 w-5" />
+                          <span>{data.location}</span>
+                        </div>
+
+                        <div className="mt-6 h-px w-full bg-gray-200" />
+
+                        <div className="mt-8">
+                          <div className="text-[16px] font-black text-gray-900">
+                            Project Details
+                          </div>
+                          <div className="mt-3 text-[16px] text-gray-600 font-medium">
+                            {data.specs}
+                          </div>
+                        </div>
+
+                        <div className="mt-8">
+                          <div className="text-[16px] font-black text-gray-900">
+                            Description
+                          </div>
+                          <p className="mt-3 text-[16px] leading-7 text-gray-600">
+                            {data.description}
+                          </p>
+                        </div>
+
+                        <div className="mt-10">
+                          <button
+                            type="button"
+                            onClick={onGoInquire}
+                            className="w-full rounded-2xl bg-orange-600 px-6 py-4 text-white font-black text-[16px] shadow-lg shadow-orange-600/25 hover:brightness-95 transition inline-flex items-center justify-center gap-3"
+                          >
+                            {data.buttonText}
+                            <IconArrowRight className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="inquire"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-[12px] font-black tracking-[0.26em] text-orange-500 uppercase">
+                              INQUIRY FORM
+                            </div>
+                            <h3 className="mt-3 text-xl sm:text-2xl font-black text-gray-900">
+                              Inquire About This Project
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-500 font-semibold">
+                              We will contact you soon.
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={onBackDetails}
+                            className="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 font-black text-[11px] uppercase tracking-[0.22em] hover:border-orange-300 hover:text-orange-600 transition"
+                          >
+                            Back
+                          </button>
+                        </div>
+
+                        <div className="mt-6 h-px w-full bg-gray-200" />
+
+                        <form
+                          onSubmit={onSubmitForm}
+                          className="mt-6 space-y-4"
+                        >
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Field
+                              label="Product ID"
+                              value={String(form.productId)}
+                            />
+                            <Field
+                              label="Product Name"
+                              value={form.productName}
+                            />
+
+                            <Input
+                              label="Full Name"
+                              name="fullName"
+                              value={form.fullName}
+                              onChange={onChangeForm}
+                              placeholder="Your name"
+                              required
+                            />
+                            <Input
+                              label="Phone"
+                              name="phone"
+                              value={form.phone}
+                              onChange={onChangeForm}
+                              placeholder="+855 ..."
+                            />
+
+                            <div className="sm:col-span-2">
+                              <Input
+                                label="Email"
+                                name="email"
+                                type="email"
+                                value={form.email}
+                                onChange={onChangeForm}
+                                placeholder="you@example.com"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-2">
+                              <label className="block text-[11px] font-black uppercase tracking-[0.22em] text-gray-600 mb-2">
+                                Message
+                              </label>
+                              <textarea
+                                name="message"
+                                value={form.message}
+                                onChange={onChangeForm}
+                                placeholder="Write your message..."
+                                className="w-full min-h-[110px] px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 text-sm font-semibold outline-none focus:border-orange-600 transition-colors"
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full rounded-2xl bg-gray-900 px-6 py-4 text-white font-black text-[15px] hover:bg-orange-600 transition inline-flex items-center justify-center gap-3"
+                          >
+                            Submit Inquiry
+                            <IconArrowRight className="h-5 w-5" />
+                          </button>
+                        </form>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* -------------------- Small components -------------------- */
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-black uppercase tracking-[0.22em] text-gray-600 mb-2">
+        {label}
+      </label>
+      <input
+        value={value}
+        readOnly
+        className="w-full px-4 py-3.5 rounded-2xl bg-gray-100 border border-gray-100 text-sm font-semibold text-gray-800 outline-none"
+      />
+    </div>
+  );
+}
+
+function Input({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  required,
+  type = "text",
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  required?: boolean;
+  type?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-[11px] font-black uppercase tracking-[0.22em] text-gray-600 mb-2">
+        {label}
+      </label>
+      <input
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        type={type}
+        className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-sm font-semibold outline-none focus:border-orange-600 transition-colors"
+      />
+    </div>
+  );
+}
+
+/* -------------------- Icons -------------------- */
 
 function IconPlus({ className }: { className?: string }) {
   return (
@@ -1060,6 +1436,30 @@ function IconChevronDown({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconPin({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 22s7-4.5 7-12a7 7 0 0 0-14 0c0 7.5 7 12 7 12z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 11a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

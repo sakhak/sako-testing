@@ -167,7 +167,10 @@ const Hero: React.FC<HeroProps> = ({ lang }) => {
                       "
                     >
                       {/* inner padding area so image never touches edges */}
-                      <div className="w-full h-full p-4 flex items-center justify-center">
+                      <div 
+                      className="w-full h-full flex items-center justify-center"
+                      
+                      >
                         <motion.img
                           src={`https://picsum.photos/seed/${
                             idx + 100
