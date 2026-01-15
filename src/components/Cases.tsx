@@ -145,7 +145,7 @@ const Cases: React.FC = () => {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
         >
           <AnimatePresence mode="popLayout">
-            {filtered.map((item, idx) => (
+            {filtered.map((item) => (
               <motion.article
                 key={item.title}
                 layout

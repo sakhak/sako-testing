@@ -361,7 +361,7 @@ const FAQPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-3">
-                    {section.items.map((item, idx) => {
+                    {section.items.map((item) => {
                       // Note: idx here is filtered index; for stable id, map original index by searching:
                       const originalIndex = sections
                         .find((s) => s.id === section.id)!

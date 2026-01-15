@@ -1,18 +1,28 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants, type Easing, easeInOut } from "framer-motion";
 
-const fadeUp = {
+// ✅ Use a real Easing value (cubic-bezier array)
+const easeOutBezier: Easing = [0.16, 1, 0.3, 1];
+
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 18 },
-  visible: (i = 0) => ({
+  visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, delay: i * 0.08, ease: "easeOut" },
+    transition: {
+      duration: 0.55,
+      delay: i * 0.08,
+      ease: easeOutBezier, // ✅ FIXED (no string)
+    },
   }),
 };
 
-const fade = {
+const fade: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.7, ease: "easeOut" } },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.6, ease: easeInOut }, // ✅ OK
+  },
 };
 
 const AboutPage: React.FC = () => {
@@ -82,7 +92,7 @@ const AboutPage: React.FC = () => {
   return (
     <div className="bg-white overflow-x-hidden mt-[-30px]">
       {/* Hero / History Section */}
-      <section className="relative min-h-[520px]  h-[92vh] sm:h-[100vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[520px] h-[92vh] sm:h-[100vh] flex items-center overflow-hidden">
         <motion.div
           variants={fade}
           initial="hidden"

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { AnimatePresence, motion,type Variants } from "framer-motion";
+import { AnimatePresence, motion, type Easing, type Variants } from "framer-motion";
 
 /**
  * ServiceCentersPage (Redesign + Responsive + Framer Motion)
@@ -11,8 +11,8 @@ import { AnimatePresence, motion,type Variants } from "framer-motion";
  */
 
 type CountryId = "PK" | "NG" | "CN";
-
-const ease = [0.2, 0.8, 0.2, 1] as const;
+const ease: Easing = [0.2, 0.8, 0.2, 1];
+// const ease = [0.2, 0.8, 0.2, 1] as const;
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -32,7 +32,7 @@ const cardIn: Variants = {
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease } },
 };
 
-const panel: Variants = {
+const  Variants = {
   collapsed: { height: 0, opacity: 0 },
   open: { height: "auto", opacity: 1, transition: { duration: 0.28, ease } },
 };
@@ -162,7 +162,6 @@ const ServiceCentersPage: React.FC = () => {
               </motion.div>
             </div>
           </div>
-
         </div>
       </section>
 
