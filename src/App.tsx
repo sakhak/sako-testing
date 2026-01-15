@@ -115,7 +115,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans bg-white">
       <Navbar onNavigate={navigateTo as any} currentPage={currentPage as any} lang={lang} setLang={setLang} />
       <main className="flex-grow pt-24 lg:pt-32">
         {currentPage === 'home' && (
