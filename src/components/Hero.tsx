@@ -177,13 +177,13 @@ const Hero: React.FC<HeroProps> = ({ lang }) => {
                           }/420/420`}
                           alt={`Product ${idx}`}
                           className="w-full h-full object-contain"
-                          animate={{ y: [0, -6, 0] }}
-                          transition={{
-                            duration: 3.2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: idx * 0.2,
-                          }}
+                          // animate={{ y: [0, -6, 0] }}
+                          // transition={{
+                          //   duration: 3.2,
+                          //   repeat: Infinity,
+                          //   ease: "easeInOut",
+                          //   delay: idx * 0.2,
+                          // }}
                         />
                       </div>
                     </motion.div>
